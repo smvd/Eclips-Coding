@@ -32,35 +32,67 @@ ____
 |__ |_| |  | |  | | | | \| |_/ __|
 ========================
 Compile 	- gcc "Cclips-Terminal.c" -o "Cclips-Terminal.exe" && Cclips-Terminal
-Git Commit	- git commit -a -m " "
+Git Commit	- git commit -a -m "-"
 Git Push	- git push
+Enable ANSI - reg add HKEY_CURRENT_USER\Console /v VirtualTerminalLevel /t REG_DWORD /d 0x00000001 /f
 */
 
-#include <stdio.h>							// Lib for IO
-#include <string.h>							// Lib for string functions
+#include <stdio.h>																// Lib for IO
+#include <string.h>																// Lib for string functions
 
-#define TRUE 	1 							// Bool true
-#define FALSE 	0 							// Bool false
+#define TRUE 	1 																// Bool true
+#define FALSE 	0 																// Bool false
 
-int main()									// Main entry point
+void error(char type[100], char message[100])									// Function to throw custom error
 {
-	char in[100];							// Char array for input
+	printf("\e[0;31m");															// Set text color to red
+	printf("ERROR > %s > %s\n",type, message);									// Display error message
+	printf("\e[0;0m");															// Reset text color
+}
 
-	while (TRUE)							// Inf loop
+int main()																		// Main entry point
+{
+	
+	char in[100];																// Char array for input
+	char buff[100];																// A place to store temps values
+
+	while (TRUE)																// Inf loop
 	{
-		printf("> ");						// IO prompt
-		fgets(in, 100, stdin);				// Get the input
-		strtok(in, "\n");					// Remove the enter character
+		top:																	// Point the jump to wich will restart cycle
+		printf("> ");															// IO prompt
+		fgets(in, 100, stdin);													// Get the input
+		strtok(in, "\n");														// Remove the enter character
 
-		if (strstr("0123456789", &in[0]))	// If its a number
+		if (strchr("0123456789", in[0]))										// If its a number
 		{
-			
+			/* - MATH LEXER - */
+			for (unsigned int i = 0; i < strlen(in); i++)						// Loop threw each character in the input
+			{
+				if (strchr("0123456789.", in[i]))								// If its a number or a .
+				{
+					
+				}
+				else if (strchr("+-*/%", in[i]))								// If its a math operator
+				{
+					
+				}
+				else															// If it isnt one of the above
+				{
+					if (in[i] == ' ')											// If its a space 
+					{
+						continue;												// Ignore it
+					}
+					snprintf(buff, 100, "Invalid character at index: %d", i); 	// Put error message into buffer
+					error("SYNTAX", buff);										// Throw error
+					goto top;													// End operation
+				}				
+			}
 		}
-		else 								// If it aint a number 
+		else 																	// If it aint a number 
 		{
-			
+			/* - MAIN LEXER - */
 		}
 	}
 	
-	return 0;								// End program
+	return 0;																	// End program
 }
