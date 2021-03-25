@@ -39,6 +39,7 @@ Enable ANSI - reg add HKEY_CURRENT_USER\Console /v VirtualTerminalLevel /t REG_D
 
 #include <stdio.h>																// Lib for IO
 #include <string.h>																// Lib for string functions
+#include "CustomMath.c"															// Import the file holding the math functions
 
 #define TRUE 	1 																// Bool true
 #define FALSE 	0 																// Bool false
@@ -50,31 +51,60 @@ void error(char type[100], char message[100])									// Function to throw custo
 	printf("\e[0;0m");															// Reset text color
 }
 
+void append(char* s, char c) {
+        int len = strlen(s);
+        s[len] = c;
+        s[len+1] = '\0';
+}
+
 int main()																		// Main entry point
 {
 	
 	char in[100];																// Char array for input
 	char buff[100];																// A place to store temps values
+	char parsed[10][100];														// String array to hold the parsed input
 
 	while (TRUE)																// Inf loop
 	{
+		for (int i = 0; i < 10; i++)											// Loop 10 times
+		{
+			if (parsed[i][0] == '\0') {break;}									// If its the end of the array, stop
+			strcpy(parsed[i], "");												// Set the current slot to blank
+		}
+
 		top:																	// Point the jump to wich will restart cycle
-		printf("> ");															// IO prompt
+		printf("~ ");															// IO prompt
 		fgets(in, 100, stdin);													// Get the input
 		strtok(in, "\n");														// Remove the enter character
 
 		if (strchr("0123456789", in[0]))										// If its a number
 		{
 			/* - MATH LEXER - */
+			int x = 0;															// Var to hold the current slot we are writing
 			for (unsigned int i = 0; i < strlen(in); i++)						// Loop threw each character in the input
 			{
 				if (strchr("0123456789.", in[i]))								// If its a number or a .
 				{
-					
+					append(parsed[x], in[i]);									// Append the character to the current slot
+					x++;														// Activate the next slot
+					if (strchr("0123456789", in[i+1])) 							// If the next character is a number
+					{
+						x--;													// Activat the last slot
+					}
+				}
+				else if (in[i] == ')' || in[i] == '(')							// If its parentheses
+				{
+					append(parsed[x], in[i]);									// Append the character to the current slot
+					x++;														// Activate the next slot
 				}
 				else if (strchr("+-*/%", in[i]))								// If its a math operator
 				{
-					
+					append(parsed[x], in[i]);									// Append the character to the current slot
+					x++;														// Activate the next slot
+					if (in[i+1] == '*')				 							// If the next character is *
+					{
+						x--;													// Activat the last slot
+					}
 				}
 				else															// If it isnt one of the above
 				{
@@ -87,6 +117,15 @@ int main()																		// Main entry point
 					goto top;													// End operation
 				}				
 			}
+
+			/* - FORMAT THE PARSED OUTPUT - */
+			printf("[ %s", parsed[0]);											// Print some stuff
+			for (int i = 1; i < 10; i++)										// Loop 10 times
+			{
+				if (parsed[i][0] == '\0') {break;}								// If its the end of the array, stop
+				printf(" : %s", parsed[i]);										// Print some stuff
+			}
+			printf("]\n");														// Print some stuff
 		}
 		else 																	// If it aint a number 
 		{
