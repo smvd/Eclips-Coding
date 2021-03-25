@@ -1,137 +1,177 @@
-#include <stdio.h>                                                                  // Base lib
-#include <string.h>                                                                 // For string actions
-#include <windows.h>                                                                // To interact with os functions
+#include <stdio.h>                                              // Base lib
+#include <string.h>                                             // For string actions
+#include <windows.h>                                            // To interact with os functions
 
-#define TRUE    1                                                                   // Bool TRUE
-#define FALSE   0                                                                   // Bool FALSE
+#define TRUE    1                                               // Bool TRUE
+#define FALSE   0                                               // Bool FALSE
 
-void error(char type[150], char message[150])                                       // Command to throw and display an error 
+void error(char type[150], char message[150])                   // Function to throw error with type and message
 {
-    printf("\e[0;101mERROR: %s: %s\e[0m\n",type,message);                           // Print the text with a red background
+    printf("\e[0;101mERROR: %s: %s\e[0m\n",type,message);       // Print the actual error
 }
 
-void clear()                                                                        // Command to clear the terminal window
+void clear()                                                    // Function to clear the terminal window
 {
-    system("cls 2> nul");                                                           // Clear screen windows with error supression
-    system("clear 2> nul");                                                         // Clear screen linux and mac with error supression
+    system("cls 2> nul");                                       // Windows clear with error dump
+    system("clear 2> nul");                                     // Linux clear with error dump
 }
 
-int main()                                                                          // Main function
+void logo()                                                     // Function to draw the logo
 {
-    char buff[150];                                                                 // String for use as a buffer
-    char in[200];                                                                   // String for user input
-    char path[200] = "C:\\";                                                        // String for the current path
-    char command[50];                                                               // String for the current command
-    char param[150];                                                                // String for the current unparsed parameters
-    char params[10][150];                                                           // String array to hold the current parsed parameters
-
-    clear();
-
-    while (TRUE)                                                                    // Inf loop
+    // Contains number to character
+    // 0 = ' '
+    // 1 = '█'
+    // 2 = '\n'
+    char num[] = "11111112100000000011111100100000001001111110011111100000000000000000000111111100111111001111110010000001001001000100001100001210000000001000000010000000000100001001000000000011111111110000000010000010000000100001001110011100000110010001001000121000000000100000001000000010011111100111111000001111111111000000001000001111000011111100100110010010010101000100100012100000000010000000100000001001000000000000100000000000000000000000100000100000001000100010000001001001001100111111001211111110001111110011111100100100000001111110000000000000000000000010000011111100100001001000000100100100010010000100111112";
+    
+    for (int i = 0; i < 620; i++)                               // Loop 620 times
     {
-        strcpy(command,"");                                                         // Clearing the command var
-        strcpy(param,"");                                                           // Clearing the param var
-        strcpy(in,"");                                                              // Clearing the in var
+        if (num[i] == '0') {printf(" ");}                       // If its a 0 print ' '
+        if (num[i] == '1') {printf("%c",219);}                  // If its a 1 print '█'
+        if (num[i] == '2') {printf("\n");}                      // If its a 2 print '\n'
+    }
+}
 
-        printf("%s ~ ",path);                                                       // Display prompt
-        fgets(in, 200, stdin);                                                      // Get the user input
-        strtok(in, "\n");                                                           // Remove the enter from it
-        if (in[strlen(in)-2] == ' ') {strcat(in, " ");}                             // Adding a space to avoid errors
+int main()
+{
+    char in[200];                                               // The users input
+    char buff[100];                                             // The buffer 
+    char splits[10][100];                                       // The array to hold the parsed input
+    char path[] = "C:\\";                                       // A string that holds the current path
 
-        strcpy(command,in);                                                         // Copy the input to the command var
-        strtok(command, "(");                                                       // Cut of all after (
+    clear();                                                    // Clear the terminal
+    logo();                                                     // Print the logo
+    printf("\n");                                               // Print a blank line                                
 
-        for(int i = 0; command[i]; i++)                                             // For each character in command
+    while (TRUE)                                                // Main loop
+    {
+        strcpy(in, "");                                         // Clear the in variable
+        strcpy(buff, "");                                       // Clear the buffer
+        for (int i = 0; i < 10; i++)                            // Loop 10 times
         {
-            command[i] = tolower(command[i]);                                       // Convert the character to lowercase
-        }   
-
-        strcpy(param,in);                                                           // Copy the input to param
-        memmove(param, param+strlen(command)+1, strlen(param));                     // Remove the content of command
-        param[strlen(param)-1] = '\0';                                              // Remove the trailing )
-
-        for (int i = 0; i < strlen(param); i++)                                     // Loop threw each character in param
-        {
-            if (param[i] == '\"')                                                   // If its a "
-            {
-                memmove(&param[i], &param[i + 1], strlen(param) - i);               // Remove the character
-            }
+            strcpy(splits[i], "");                              // Clear the splits[i] variable
         }
 
-        int x = 0;                                                                  // Var to hold what index we are on
-        strcpy(buff, "");                                                           // Clear the buffer
+        printf("%s %c ", path, 175);
+        fgets(in, 200, stdin);                                  // Get the users input
+        strtok(in, "\n");                                       // Remove the newline character
 
-        if (param[strlen(param)-1] != ';') {strcat(param, ";");}                    // Append a ; to the end if its missing
-
-        for (int i = 0; i < strlen(param); i++)                                     // Loop threw each character in param
+        int quotes = FALSE;                                     // Set quotes to 0
+        int x = 0;                                              // Set x to 0
+        strcpy(buff, "");                                       // Clear the buffer
+        for (int i = 0; i < strlen(in); i++)                    // Loop threw each character in the users input
         {
-            if (param[i] == ';')                                                    // If its a ;
-            {   
-                strcpy(params[x], buff);                                            // Copy the content of the buffer to the parameters
-                strcpy(buff, "");                                                   // Clear the buffer
-
-                x++;                                                                // Add 1 to x
+            if (in[i] == '\"')                                  // If the character is a quote
+            {
+                if (quotes == TRUE) {quotes = FALSE;}           // If we are in quotes we leave them
+                else if (quotes == FALSE) {quotes = TRUE;}      // If we arnt in quotes we enter them
             }
+            else if (in[i] == ' ' && quotes == FALSE)           // If we arnt in quotes and we hit a space
+            {
+                strcpy(splits[x], buff);                        // Push the buffer to the array
+                strcpy(buff, "");                               // Clear the array
+                x++;                                            // Add 1 to x
+            }
+            else                                                // If we hit any other character
+            {
+                strncat(buff, &in[i], 1);                       // Add it to the buffer
+            }
+        }
+        strcpy(splits[x], buff);                                // Dump the current buffer as it may contain data
+
+        printf("[ %s", splits[0]);                              // Print a '[ and the first item'
+        for (int i=1; i < 100; i++)                             // Loop 100 times
+        {
+            if (splits[i][0] == '\0') {break;}                  // If we hit the end leave loop
+            printf(" : %s", splits[i]);                         // Print ' : and the current item'
+        }
+        printf(" ]\n");                                         // Print ' ]' and a new line
+
+        if (splits[0][0] != '\0')                               // If we gave a command
+        {
+            if (strcmp(splits[0], "exit") == 0 || strcmp(splits[0], ";") == 0) // If command = exit or ;
+            {
+                if (splits[1][0] == '?')                        // If params = ?
+                {
+                    // Display help message
+                    printf("    -- EXIT --\n");
+                    printf("exit - ;\n");
+                    printf(" - exit\n");
+                    printf("Closes the program\n");
+                    printf(" - exit ?\n");
+                    printf("Displays this help message\n\n");
+                }
+                else 
+                {
+                    return 0;                                   // Quit program
+                }
+            }
+            else if (strcmp(splits[0], "clear") == 0 || strcmp(splits[0], "!") == 0) // If command = clear or cls or !
+            {
+                if (splits[1][0] == '?')                        // If params = ?
+                {
+                    // Display help message
+                    printf("    -- CLEAR --\n");
+                    printf("clear - !\n");
+                    printf(" - clear\n");
+                    printf("Wipes the content of the terminal\n");
+                    printf(" - clear -NoLogo\n");
+                    printf("Clears the terminal without displaying the logo again\n");
+                    printf(" - clear ?\n");
+                    printf("Displays this help message\n\n");
+                }
+                else if (strcmp(splits[1], "-NoLogo") == 0)
+                {
+                    clear();                                    // Clear the screen
+                }
+                else
+                {
+                    clear();                                    // Clears the screen
+                    logo();                                     // Displays the logo
+                }
+            }
+            else if (strcmp(splits[0], "write") == 0 || strcmp(splits[0], "print") == 0) // If it matches write or print 
+            {
+                if (splits[1][0] == '?')                        // If params = ?
+                {
+                    // Display help message
+                    printf("    -- WRITE --\n");
+                    printf("write - print\n");
+                    printf(" - write {message}\n");
+                    printf("Writes the message to the terminal\n");
+                    printf(" - write ?\n");
+                    printf("Displays this help message\n\n");
+                }
+                else
+                {
+                    printf("%s\n",splits[1]);                   // Write the message
+                }
+            }
+            else if (strcmp(splits[0], "error") == 0 || strcmp(splits[0], "throw") == 0) // If it matches error or throw
+			{
+				if (splits[1][0] == '?')                        // If params = ?
+				{
+                    // Display help message
+                    printf("    -- ERROR --\n");
+                    printf("error - throw\n");
+                    printf(" - error {type} {message}\n");
+                    printf("Throw the given error of the given type.\n");
+                    printf(" - error ?\n");
+                    printf("Displays this help message\n\n");
+				}
+				else
+				{
+					error(splits[1],splits[2]);					// Throw the given error of the given type
+				}
+			}
             else
             {
-                strncat(buff, &param[i], 1);                                        // Add the character to the buffer
-            }
-        }
-
-        printf("[\"Command\":\"%s\",\"param\":\"%s\"]\n",command,param);            // Display the users input cleanly (I swear)
-
-        if (strcmp(command, "clear") == 0 || strcmp(command, "cls") == 0 || strcmp(command, "!") == 0)  // If it matches clear, cls, !
-        {
-            if (strcmp(params[0],"?") == 0)                                         // If user gave ? as param
-            {
-                printf("    -- CLEAR(clear, cls, !) --\n");                         // Display help message
-                printf("The clear command wipes the terminal window.\n");
+                strcat(splits[0], " is not a valid command");
+                error("UNKNOWN COMMAND", splits[0]);
                 printf("\n");
             }
-            else                          
-            { 
-                clear();                                                            // Call clear function
-            }
-        }
-        else if (strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0 || strcmp(command, ";") == 0 || strcmp(command, "close") == 0 || strcmp(command, "q") == 0)   // If it matches exit, quit, close, q ,;
-        {
-            if (strcmp(params[0],"?") == 0)                                         // If the user entered ? as param
-            {
-                printf("    -- EXIT(exit, quit, close, q, ;) --\n");                // Display the help message
-                printf("The exit command will simply exit the program (you stupid?).\n");
-                printf("\n");                                                       // Blank line
-            }
-            else                                                                    // If no params
-            {
-                return 0;                                                           // Exit program without error
-            }
-        }
-        else if (strcmp(command, "write") == 0 || strcmp(command, "printf") == 0 || strcmp(command, "print") == 0 || strcmp(command, "w") == 0 || strcmp(command, "p") == 0)    // If it matches write, printf, print, w, p
-        {
-            if (strcmp(params[0],"?") == 0)                                         // If ? is the parameter
-            {
-                printf("    -- WRITE(write, printf, print, p, w;) --\n");           // Write the help message
-                printf("The write command will simply write the text to the terminal (you stupid?).\n");    
-                printf("\n");                                                       // Blank line
-            }
-            else if (strcmp(params[0],"") == 0)                                     // If there is no message
-            {   
-                error("PARAMETERS", "No message given to write");                   // Throw error
-                printf("\n");                                                       // Blank line
-            }
-            else                                                                    // If there is a message that isnt ?
-            {
-                printf("%s\n", params[0]);                                          // Display the message
-            }
-        }
-        else                                                                        // If the command is uknown
-        {
-            strcpy(buff, "");                                                       // Clear the buffer
-            sprintf(buff, "Command \"%s\" not found", command);                     // Format the message
-            error("INVALID COMMAND", buff);                                         // Throw error
-            printf("\n");                                                           // Blank line
         }
     }
-    printf("\n");   
-    return 0;                                                                       // If its not 0 there was a issue
+
+    return 0;                                                   // End function
 }
